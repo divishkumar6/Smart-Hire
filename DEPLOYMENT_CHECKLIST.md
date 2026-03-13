@@ -84,8 +84,8 @@
 
 After deployment, save these URLs:
 
-- **Frontend URL**: https://your-app.netlify.app
-- **Backend URL**: https://your-backend.onrender.com
+- **Frontend URL**: https://smarthire03.netlify.app
+- **Backend URL**: https://smart-hire-305z.onrender.com
 - **GitHub Repository**: https://github.com/divishkumar6/Smart-Hire
 - **MongoDB Atlas**: https://cloud.mongodb.com
 

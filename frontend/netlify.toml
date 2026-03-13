@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend-app.onrender.com/api/:splat"
+  to = "https://smart-hire-305z.onrender.com/api/:splat"
   status = 200
   force = true
 
