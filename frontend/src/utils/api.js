@@ -214,7 +214,39 @@ const mockData = {
     { skill: 'Java', level: 'Beginner', count: 18 },
     { skill: 'Java', level: 'Intermediate', count: 14 },
     { skill: 'Java', level: 'Advanced', count: 6 }
-  ]
+  ],
+  offerLetters: {
+    'mock-candidate-1': {
+      candidateName: 'Arjun Sharma',
+      candidateEmail: 'arjun@example.com',
+      position: 'Software Engineer',
+      company: 'TechCorp',
+      salary: '₹12,00,000',
+      joiningDate: '2024-07-01',
+      workLocation: 'Bangalore, India',
+      workMode: 'Hybrid',
+      probationPeriod: '6 months',
+      benefits: ['Health Insurance', 'Flexible Working Hours', 'Learning & Development Budget'],
+      reportingManager: 'Sarah Johnson',
+      department: 'Engineering',
+      letterDate: new Date().toISOString().split('T')[0]
+    },
+    'mock-candidate-4': {
+      candidateName: 'Sneha Patel',
+      candidateEmail: 'sneha@example.com',
+      position: 'Frontend Developer',
+      company: 'WebTech',
+      salary: '₹10,00,000',
+      joiningDate: '2024-06-15',
+      workLocation: 'Mumbai, India',
+      workMode: 'Remote',
+      probationPeriod: '6 months',
+      benefits: ['Health Insurance', 'Work from Home Allowance', 'Professional Development'],
+      reportingManager: 'Mike Chen',
+      department: 'Product',
+      letterDate: new Date().toISOString().split('T')[0]
+    }
+  }
 };
 
 // Check if using default credentials
@@ -272,6 +304,14 @@ const mockApiCall = (method, url, data) => {
             mockData.drives[index] = { ...mockData.drives[index], ...data };
             resolve({ data: { drive: mockData.drives[index] } });
           }
+        } else if (method === 'DELETE') {
+          // Delete drive
+          const id = url.split('/drives/')[1];
+          const index = mockData.drives.findIndex(d => d._id === id);
+          if (index !== -1) {
+            mockData.drives.splice(index, 1);
+          }
+          resolve({ data: { success: true } });
         }
       }
       // Candidates endpoints
@@ -373,6 +413,38 @@ const mockApiCall = (method, url, data) => {
       else if (url.includes('/admin/users')) {
         if (method === 'GET') {
           resolve({ data: { users: mockData.users, total: mockData.users.length } });
+        }
+      }
+      // Offers endpoint
+      else if (url.includes('/offers')) {
+        if (method === 'GET' && url.includes('/generate')) {
+          // Generate offer letter
+          const candidateId = url.split('/offers/')[1].split('/generate')[0];
+          const candidate = mockData.candidates.find(c => c._id === candidateId);
+          const offerData = mockData.offerLetters[candidateId];
+          
+          if (candidate && offerData) {
+            resolve({ data: { offerData } });
+          } else {
+            // Generate default offer data for candidates without predefined offers
+            const drive = mockData.drives.find(d => d._id === candidate?.drive);
+            const defaultOffer = {
+              candidateName: candidate?.name || 'Candidate',
+              candidateEmail: candidate?.email || 'candidate@example.com',
+              position: drive?.jobRole || 'Software Developer',
+              company: drive?.company || 'TechCorp',
+              salary: '₹8,00,000',
+              joiningDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+              workLocation: 'Bangalore, India',
+              workMode: 'Hybrid',
+              probationPeriod: '6 months',
+              benefits: ['Health Insurance', 'Flexible Working Hours'],
+              reportingManager: 'Team Lead',
+              department: 'Engineering',
+              letterDate: new Date().toISOString().split('T')[0]
+            };
+            resolve({ data: { offerData: defaultOffer } });
+          }
         }
       }
       
