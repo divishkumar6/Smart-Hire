@@ -68,6 +68,20 @@ const mockData = {
       status: 'selected',
       atsScore: 92,
       skills: ['JavaScript', 'React', 'Node.js', 'Python'],
+      experience: '2 years',
+      resume: 'arjun_resume.pdf',
+      portfolio: 'https://arjun-portfolio.com',
+      linkedin: 'https://linkedin.com/in/arjun-sharma',
+      github: 'https://github.com/arjun-sharma',
+      address: 'New Delhi, India',
+      dateOfBirth: '1998-05-15',
+      graduationYear: 2020,
+      scores: [
+        { round: 'Aptitude Test', score: 85, maxScore: 100 },
+        { round: 'Technical Interview', score: 92, maxScore: 100 },
+        { round: 'Coding Challenge', score: 88, maxScore: 100 },
+        { round: 'HR Interview', score: 95, maxScore: 100 }
+      ],
       createdAt: new Date().toISOString(),
     },
     {
@@ -82,6 +96,20 @@ const mockData = {
       status: 'waitlisted',
       atsScore: 78,
       skills: ['Java', 'Spring Boot', 'MySQL', 'Angular'],
+      experience: '1.5 years',
+      resume: 'priya_resume.pdf',
+      portfolio: 'https://priya-portfolio.com',
+      linkedin: 'https://linkedin.com/in/priya-nair',
+      github: 'https://github.com/priya-nair',
+      address: 'Chennai, India',
+      dateOfBirth: '1999-08-22',
+      graduationYear: 2021,
+      scores: [
+        { round: 'Aptitude Test', score: 75, maxScore: 100 },
+        { round: 'Technical Interview', score: 80, maxScore: 100 },
+        { round: 'Coding Challenge', score: 72, maxScore: 100 },
+        { round: 'HR Interview', score: 85, maxScore: 100 }
+      ],
       createdAt: new Date().toISOString(),
     },
     {
@@ -96,6 +124,18 @@ const mockData = {
       status: 'under_review',
       atsScore: 85,
       skills: ['Python', 'Data Science', 'Machine Learning', 'SQL'],
+      experience: '3 years',
+      resume: 'rohan_resume.pdf',
+      portfolio: 'https://rohan-portfolio.com',
+      linkedin: 'https://linkedin.com/in/rohan-mehta',
+      github: 'https://github.com/rohan-mehta',
+      address: 'Mumbai, India',
+      dateOfBirth: '1997-12-10',
+      graduationYear: 2019,
+      scores: [
+        { round: 'Aptitude', score: 88, maxScore: 100 },
+        { round: 'Technical Round', score: 82, maxScore: 100 }
+      ],
       createdAt: new Date().toISOString(),
     },
     {
@@ -110,6 +150,18 @@ const mockData = {
       status: 'selected',
       atsScore: 94,
       skills: ['React', 'Vue.js', 'TypeScript', 'CSS'],
+      experience: '2.5 years',
+      resume: 'sneha_resume.pdf',
+      portfolio: 'https://sneha-portfolio.com',
+      linkedin: 'https://linkedin.com/in/sneha-patel',
+      github: 'https://github.com/sneha-patel',
+      address: 'Bangalore, India',
+      dateOfBirth: '1998-03-18',
+      graduationYear: 2020,
+      scores: [
+        { round: 'Portfolio Review', score: 96, maxScore: 100 },
+        { round: 'Live Coding', score: 92, maxScore: 100 }
+      ],
       createdAt: new Date().toISOString(),
     }
   ],
@@ -226,40 +278,64 @@ const mockApiCall = (method, url, data) => {
       else if (url.includes('/candidates')) {
         if (url.includes('/candidates/heatmap')) {
           resolve({ data: { heatmap: mockData.heatmap } });
+        } else if (url.includes('/candidates/dashboard-stats')) {
+          resolve({ data: { stats: mockData.dashboardStats } });
         } else if (method === 'GET') {
-          // Get candidates with filters
-          const urlParams = new URLSearchParams(url.split('?')[1] || '');
-          const limit = parseInt(urlParams.get('limit')) || 10;
-          const page = parseInt(urlParams.get('page')) || 1;
-          const status = urlParams.get('status');
-          const drive = urlParams.get('drive');
-          const search = urlParams.get('search');
-          
-          let filteredCandidates = [...mockData.candidates];
-          
-          if (status) {
-            filteredCandidates = filteredCandidates.filter(c => c.status === status);
+          // Check if requesting single candidate
+          const candidateIdMatch = url.match(/\/candidates\/([^?]+)$/);
+          if (candidateIdMatch) {
+            // Get single candidate
+            const id = candidateIdMatch[1];
+            const candidate = mockData.candidates.find(c => c._id === id);
+            if (candidate) {
+              // Add drive details to candidate
+              const drive = mockData.drives.find(d => d._id === candidate.drive);
+              resolve({ 
+                data: { 
+                  candidate: {
+                    ...candidate,
+                    driveDetails: drive
+                  }
+                } 
+              });
+            } else {
+              resolve({ data: { candidate: null } });
+            }
+          } else {
+            // Get candidates with filters
+            const urlParams = new URLSearchParams(url.split('?')[1] || '');
+            const limit = parseInt(urlParams.get('limit')) || 10;
+            const page = parseInt(urlParams.get('page')) || 1;
+            const status = urlParams.get('status');
+            const drive = urlParams.get('drive');
+            const search = urlParams.get('search');
+            
+            let filteredCandidates = [...mockData.candidates];
+            
+            if (status) {
+              filteredCandidates = filteredCandidates.filter(c => c.status === status);
+            }
+            if (drive) {
+              filteredCandidates = filteredCandidates.filter(c => c.drive === drive);
+            }
+            if (search) {
+              filteredCandidates = filteredCandidates.filter(c => 
+                c.name.toLowerCase().includes(search.toLowerCase()) ||
+                c.email.toLowerCase().includes(search.toLowerCase())
+              );
+            }
+            
+            const start = (page - 1) * limit;
+            const paginatedCandidates = filteredCandidates.slice(start, start + limit);
+            
+            resolve({ 
+              data: { 
+                candidates: paginatedCandidates, 
+                total: filteredCandidates.length,
+                totalPages: Math.ceil(filteredCandidates.length / limit)
+              } 
+            });
           }
-          if (drive) {
-            filteredCandidates = filteredCandidates.filter(c => c.drive === drive);
-          }
-          if (search) {
-            filteredCandidates = filteredCandidates.filter(c => 
-              c.name.toLowerCase().includes(search.toLowerCase()) ||
-              c.email.toLowerCase().includes(search.toLowerCase())
-            );
-          }
-          
-          const start = (page - 1) * limit;
-          const paginatedCandidates = filteredCandidates.slice(start, start + limit);
-          
-          resolve({ 
-            data: { 
-              candidates: paginatedCandidates, 
-              total: filteredCandidates.length,
-              totalPages: Math.ceil(filteredCandidates.length / limit)
-            } 
-          });
         } else if (method === 'POST') {
           // Create candidate
           const newCandidate = {
@@ -271,6 +347,14 @@ const mockApiCall = (method, url, data) => {
           };
           mockData.candidates.push(newCandidate);
           resolve({ data: { candidate: newCandidate } });
+        } else if (method === 'PUT') {
+          // Update candidate
+          const id = url.split('/candidates/')[1];
+          const index = mockData.candidates.findIndex(c => c._id === id);
+          if (index !== -1) {
+            mockData.candidates[index] = { ...mockData.candidates[index], ...data };
+            resolve({ data: { candidate: mockData.candidates[index] } });
+          }
         } else if (method === 'DELETE') {
           // Delete candidate
           const id = url.split('/candidates/')[1];
