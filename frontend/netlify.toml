@@ -2,6 +2,10 @@
   publish = "dist"
   command = "npm run build"
 
+[build.environment]
+  NODE_VERSION = "18"
+  VITE_API_URL = "https://smart-hire-305z.onrender.com"
+
 [[redirects]]
   from = "/api/*"
   to = "https://smart-hire-305z.onrender.com/api/:splat"
@@ -12,6 +16,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-[build.environment]
-  NODE_VERSION = "18"
